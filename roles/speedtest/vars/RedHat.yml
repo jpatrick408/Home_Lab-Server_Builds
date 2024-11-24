@@ -1,0 +1,4 @@
+apache: httpd
+speedOwner: "apache"
+speedGroup: "apache"
+httpConf: /etc/httpd/conf/httpd.conf

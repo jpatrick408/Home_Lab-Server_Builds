@@ -1,0 +1,4 @@
+apache: apache2
+speedOwner: "www-data"
+speedGroup: "www-data"
+httpConf: /etc/apache2/sites-available/jsspeedtest2.jsq.js.conf

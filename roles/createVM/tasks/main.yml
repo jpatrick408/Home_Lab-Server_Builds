@@ -1,0 +1,46 @@
+- name: Importing Host Server Information
+  ansible.builtin.include_vars: xcp-host.yml
+
+- name: Creating Virtual Machine From Template
+  community.general.xenserver_guest:
+    hostname: "{{ xenHostIP }}"
+    username: "{{ xenHostUser }}"
+    password: "{{ xenHostPW }}"
+    name: "{{ xenVMName }}"
+    state: poweredon
+    template: "{{ xenVMTemplate }}"
+    disks:
+    - size_gb: "{{ xenVMSize  }}"
+    hardware:
+      num_cpus: "{{ xenVMCPU }}"
+      memory_mb: "{{ xenVMRAM }}"
+    cdrom:
+      iso_name: "{{ xenVMISO }}"
+    networks:
+    - name: "{{ xenVMNetwork }}"
+      mac: "{{ xenVMMAC }}"
+    custom_params:
+    - key: HVM_boot_params
+      value: { "order": "ndc" }
+  delegate_to: localhost
+  register: deploy
+
+- name: Waiting 30 seconds So That The Virtual Machine Can Finish Booting
+  ansible.builtin.wait_for:
+    timeout: 30
+  delegate_to: localhost
+
+- name: Changing Boot Order and Waiting for XCP-NG Guest Tools to be Manually Installed.
+  community.general.xenserver_guest:
+    hostname: "{{ xenHostIP }}"
+    username: "{{ xenHostUser }}"
+    password: "{{ xenHostPW }}"
+    name: "{{ xenVMName }}"
+    cdrom:
+      iso_name: guest-tools.iso
+    custom_params:
+    - key: HVM_boot_params
+      value: { "order": "cdn" }
+    wait_for_ip_address: true
+  delegate_to: localhost
+

@@ -1,0 +1,10 @@
+<VirtualHost 172.16.25.51:80>
+        ServerName jsspeedtest2.jsq.js
+        DocumentRoot /var/www/html/
+
+        <Directory "/var/www/html/">
+                Options +FollowSymLinks
+                AllowOverride All
+                Require all granted
+        </Directory>
+</VirtualHost>

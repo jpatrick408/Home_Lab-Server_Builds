@@ -1,0 +1,81 @@
+- name: Importing Gitea Variables
+  ansible.builtin.include_vars: '{{ ansible_os_family }}.yml'
+
+- name: Removing CD-ROM from Sources
+  ansible.builtin.apt_repository:
+    repo: deb cdrom:[Debian GNU/Linux 12.8.0 _Bookworm_ - Official amd64 DVD Binary-1 with firmware 20241109-11:05]/ bookworm contrib main non-free-firmware
+    state: absent
+
+- name: Updating Gitea VM
+  ansible.builtin.import_role:
+    name: updateServers
+
+- name: Installing Gitea Prerequisites
+  ansible.builtin.package:
+    name:
+      - git
+      - python3-pymysql
+      - sqlite3
+      #- supervisor
+
+- name: Creating Gitea User
+  ansible.builtin.user:
+    name: git
+    comment: 'Git Version Control'
+    system: true
+    shell: /bin/bash
+    create_home: yes
+    password: '*'
+
+- name: Creating Gitea Folders
+  ansible.builtin.file:
+    path: /var/lib/gitea
+    state: directory
+    owner: git
+    group: root
+    mode: '0750'
+  loop:
+    - /var/lib/gitea
+    - /var/lib/gitea/custom
+    - /var/lib/gitea/data
+    - /var/lib/gitea/log
+
+- name: Building Gitea Folders (Continued)
+  ansible.builtin.file:
+    path: /etc/gitea
+    owner: root
+    group: git
+    mode: '0770'
+    state: directory
+
+- name: Finding Latest Version of Gitea
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/go-gitea/gitea/tags
+    return_content: yes
+    status_code: 200
+    body_format: json
+  register: result
+
+- name: Downloading Gitea (Debian)
+  ansible.builtin.get_url:
+    url: https://dl.gitea.com/gitea/{{ result.json[1].name | regex_replace("[^0-9.]", "") }}/gitea-{{ result.json[1].name | regex_replace("[^0-9.]", "") }}-linux-amd64
+    dest: /usr/local/bin/gitea
+    owner: git
+    group: git
+    mode: '0770'
+
+- name: Downloading Gitea Autocompletion Script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/go-gitea/gitea/main/contrib/autocompletion/bash_autocomplete
+    dest: /usr/share/bash-completion/completions/gitea
+
+- name: Setting Up Gitea Service
+  ansible.builtin.copy:
+    src: gitea.service
+    dest: /etc/systemd/system/gitea.service
+
+- name: Starting Gitea Service
+  ansible.builtin.systemd_service:
+    name: gitea.service
+    state: started
+    enabled: true

@@ -1,0 +1,80 @@
+---
+- hosts: all
+  tags: always
+  become: true
+  gather_facts: no
+  tasks:
+
+    - name: Importing User Information
+      ansible.builtin.include_vars: userInfo.yml
+
+- hosts: jsspeedtest
+  tags: speed
+  become: true
+  gather_facts: no
+  ignore_unreachable: no
+  tasks:
+
+  - name: Importing Speedtest's VMs Variables
+    ansible.builtin.include_vars: xcp_speed.yml
+
+  - name: Creating Speedtest Virtual Machine
+    ansible.builtin.import_role:
+      name: createVM
+
+- hosts: jsspeedtest
+  tags: speed
+  become: true
+  gather_facts: yes
+  tasks:
+
+  - name: Building Speedtest Server
+    ansible.builtin.import_role:
+      name: speedtest
+
+- hosts: jsstreaming
+  tags: media
+  become: true
+  gather_facts: no
+  ignore_unreachable: no
+  tasks:
+
+    - name: Importing Jellyfin's VM Variables
+      ansible.builtin.include_vars: xcp_jellyfin.yml
+
+    - name: Creating Jellyfin Virtual Machine
+      ansible.builtin.import_role:
+        name: createVM
+
+- hosts: jsstreaming
+  tags: media
+  become: true
+  gather_facts: yes
+  tasks:
+
+  - name: Setting Up Jellyfin Server
+    ansible.builtin.import_role:
+      name: jellyfin
+
+- hosts: jsgit
+  tags: git
+  become: true
+  gather_facts: no
+  tasks:
+
+  - name: Importing Gitea's VM Variables
+    ansible.builtin.include_vars: xcp_git.yml
+
+  - name: Creating Gitea Virtual Machine
+    ansible.builtin.import_role:
+      name: createVM
+
+- hosts: jsgit
+  tags: git
+  become: true
+  gather_facts: yes
+  tasks:
+
+  - name: Setting Up Gitea Server
+    ansible.builtin.import_role:
+      name: gitea

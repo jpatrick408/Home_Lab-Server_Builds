@@ -1,0 +1,90 @@
+- name: Importing Speedtest Variables
+  ansible.builtin.include_vars: '{{ ansible_os_family }}.yml'
+
+- name: Updating Speedtest VM
+  ansible.builtin.import_role:
+    name: updateServers
+
+- name: Installing LibreSpeed Dependencies
+  ansible.builtin.package:
+    name:
+      - "{{ apache }}"
+      - php
+      - git
+    state: latest
+
+- name: Creating Temp Folder
+  ansible.builtin.file:
+    path: /home/{{ realUser }}/.tmp/speedtest
+    state: directory
+    owner: "{{ realUser }}"
+    group: "{{ realUser }}"
+    mode: '0777'
+
+- name: Cloning LibreSpeed Repository
+  ansible.builtin.git:
+    repo: https://github.com/librespeed/speedtest.git
+    dest: /home/{{ realUser }}/.tmp/speedtest
+
+- name: Copying Backend Files
+  ansible.builtin.copy:
+    src: /home/{{ realUser }}/.tmp/speedtest/backend
+    dest: /var/www/html/
+    remote_src: yes
+    owner: "{{ speedOwner }}"
+    group: "{{ speedGroup }}"
+    mode: "0750"
+
+- name: Copying Index File
+  ansible.builtin.copy:
+    src: /home/{{ realUser }}/.tmp/speedtest/index.html
+    dest: /var/www/html/index.html
+    remote_src: yes
+    owner: "{{ speedOwner }}"
+    group: "{{ speedGroup }}"
+    mode: "0750"
+
+- name: Copying speedtest.js File
+  ansible.builtin.copy:
+    src: /home/{{ realUser }}/.tmp/speedtest/speedtest.js
+    dest: /var/www/html/speedtest.js
+    remote_src: yes
+    owner: "{{ speedOwner }}"
+    group: "{{ speedGroup }}"
+    mode: "0750"
+
+- name: Copying speedtest_worker.js File
+  ansible.builtin.copy:
+    src: /home/{{ realUser }}/.tmp/speedtest/speedtest_worker.js
+    dest: /var/www/html/speedtest_worker.js
+    remote_src: yes
+    owner: "{{ speedOwner }}"
+    group: "{{ speedGroup }}"
+    mode: "0750"
+
+- name: Copying Apache Host File
+  ansible.builtin.copy:
+    src: speedHost-{{ ansible_os_family }}
+    dest: "{{ httpConf }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enabling Virutal Host (Debian Based Systems)
+  ansible.builtin.command: a2ensite jsspeedtest2.jsq.js
+  when: ansible_os_family == "Debian"
+
+- name: Adding firewall rules (Fedora Based Systems)
+  ansible.posix.firewalld:
+    service: http
+#      - http
+#      - https
+    permanent: true
+    immediate: true
+    state: enabled
+  when: ansible_os_family == "RedHat"
+
+- name: Restarting Apache
+  ansible.builtin.service:
+    name: "{{ apache }}"
+    state: restarted

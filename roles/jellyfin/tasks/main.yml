@@ -1,0 +1,102 @@
+- name: Importing Speedtest Variables
+  ansible.builtin.include_vars: '{{ ansible_os_family }}.yml'
+
+- name: Updating Server
+  ansible.builtin.import_role:
+    name: updateServers
+
+- name: Creating Share Folder
+  ansible.builtin.file:
+    path: /mnt/mediaMount
+    state: directory
+    owner: root
+    state: directory
+
+- name: Jellyfin - Install CIFS Utilities
+  ansible.builtin.package:
+    name: cifs-utils
+    state: latest
+#  when: not ansible_distribution == "Ubuntu"
+
+- name: Jellyfin - Copying SMB Credentials
+  ansible.builtin.copy:
+    src: ../files/streamCreds
+    dest: /.streamCreds
+    mode: "0600"
+    owner: root
+    group: root
+    decrypt: true
+
+- name: Jellyfin - Mounting NAS Share
+  ansible.posix.mount:
+    src: "{{ nasServer }}"
+    path: /mnt/mediaMount
+    opts: "rw,credentials=/.streamCreds"
+    fstype: cifs
+    state: mounted
+
+- name: Installing Jellyfin Dependencies (Debian Based)
+  ansible.builtin.apt:
+    update_cache: yes
+    name:
+      - curl
+      - gnupg
+    state: latest
+  when: ansible_os_family == "Debian"
+
+- name: Creating Keyring Folder (Debian Based)
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+  when: ansible_os_family == "Debian"
+
+- name: Adding Jellyfin Key (Debian Based)
+  ansible.builtin.copy:
+    src: jellyfin.gpg
+    dest: /etc/apt/keyrings/jellyfin.gpg
+  when: ansible_os_family == "Debian"
+
+- name: Adding Jellyfin Repository
+  ansible.builtin.copy:
+    src: jellyfin.sources
+    dest: /etc/apt/sources.list.d/jellyfin.sources
+  when: ansible_os_family == "Debian"
+
+- name: Update Repository (Debian Based)
+  ansible.builtin.apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: installing Jellyfin (Debian Based)
+  ansible.builtin.apt:
+    name:
+      - jellyfin-server
+      - jellyfin-web
+      - jellyfin-ffmpeg6
+    state: latest
+  when: ansible_os_family == "Debian"
+
+- name: Jellyfin - Installing Jellyfin (Fedora Based)
+  ansible.builtin.dnf:
+    name: jellyfin
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: Enabling Jellyfin (Debian Based)
+  ansible.builtin.service:
+    name: jellyfin
+    enabled: yes
+  when: ansible_os_family == "Debian"
+
+- name: Starting Jellyfin (Debain Based)
+  ansible.builtin.service:
+    name: jellyfin
+    state: started
+  when: ansible_os_family == "Debian"
+
+- name: Enabling and Starting Jellyfin (Fedora Based)
+  ansible.builtin.systemd_service:
+    name: jellyfin
+    state: started
+    enabled: true
+  when: ansible_os_family == "RedHat"
