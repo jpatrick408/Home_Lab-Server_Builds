@@ -1,5 +1,4 @@
 - name: Update all packages (Debian based)
-#  tags: servers
   ansible.builtin.apt:
     upgrade: dist
     update_cache: yes
@@ -7,7 +6,6 @@
     - ansible_os_family == "Debian"
 
 - name: Update all packages (Fedora based)
-#  tags: servers
   ansible.builtin.dnf:
     name: "*"
     update_only: yes
@@ -20,6 +18,20 @@
   ansible.builtin.package:
     autoremove: yes
 
+- name: Installing Unattended Upgrades (Debian Based)
+  ansible.builting.apt:
+    name: unattended-upgrades
+    state: latest
+  when: ansible_os_family == "Debian"
+
+- name: Copying Unattended Upgrades Config File
+  ansible.builtin.file:
+    src: 50unattended-upgrades
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Checking if a reboot is required.
   ansible.builtin.stat:
     path: /var/run/reboot-required
@@ -27,6 +39,5 @@
   register: reboot_required_file
 
 - name: Rebooting the server
-  tags: servers
   ansible.builtin.reboot:
   when: reboot_required_file.stat.exists == true
