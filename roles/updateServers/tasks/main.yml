@@ -19,18 +19,19 @@
     autoremove: yes
 
 - name: Installing Unattended Upgrades (Debian Based)
-  ansible.builting.apt:
+  ansible.builtin.apt:
     name: unattended-upgrades
     state: latest
   when: ansible_os_family == "Debian"
 
 - name: Copying Unattended Upgrades Config File
-  ansible.builtin.file:
-    src: 50unattended-upgrades
+  ansible.builtin.copy:
+    src: 50unattended-upgrades-DEBIAN
     dest: /etc/apt/apt.conf.d/50unattended-upgrades
     owner: root
     group: root
     mode: '0644'
+  when: ansible_distribution == "Debian"
 
 - name: Checking if a reboot is required.
   ansible.builtin.stat:
