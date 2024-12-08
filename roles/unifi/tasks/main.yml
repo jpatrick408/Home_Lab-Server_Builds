@@ -1,0 +1,8 @@
+- name: Removing CD-ROM from Sources
+  ansible.builtin.apt_repository:
+    repo: deb cdrom
+    state: absent
+
+- name: Updating Gitea VM
+  ansible.builtin.import_role:
+    name: updateServers
