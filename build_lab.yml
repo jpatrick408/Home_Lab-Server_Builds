@@ -86,17 +86,17 @@
   tasks:
 
   - name: Importing Pi-Hole's VM Variables
-    ansible.builtin.include_vars:
-    name: xcp_dns.yml
+    ansible.builtin.include_vars: xcp_dns.yml
 
   - name: Create Pi-Hole Virtual Machine
-    ansible.builtin.include_role:
+    ansible.builtin.import_role:
       name: createVM
 
 - hosts: jsdns2
   tags: dns
   become: true
   gather_facts: yes
+  tasks:
 
     - name: Setting Up Pi-Hole Server
       ansible.builtin.import_role:
