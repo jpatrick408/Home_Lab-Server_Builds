@@ -14,8 +14,8 @@
     hardware:
       num_cpus: "{{ xenVMCPU }}"
       memory_mb: "{{ xenVMRAM }}"
-    cdrom:
-      iso_name: "{{ xenVMISO }}"
+#    cdrom:
+#      iso_name: "{{ xenVMISO }}"
     networks:
     - name: "{{ xenVMNetwork }}"
       mac: "{{ xenVMMAC }}"
