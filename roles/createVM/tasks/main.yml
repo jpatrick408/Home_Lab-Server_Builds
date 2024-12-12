@@ -14,8 +14,9 @@
     hardware:
       num_cpus: "{{ xenVMCPU }}"
       memory_mb: "{{ xenVMRAM }}"
-#    cdrom:
+    cdrom:
 #      iso_name: "{{ xenVMISO }}"
+      iso_name: guest-tools.iso
     networks:
     - name: "{{ xenVMNetwork }}"
       mac: "{{ xenVMMAC }}"
@@ -36,8 +37,8 @@
     username: "{{ xenHostUser }}"
     password: "{{ xenHostPW }}"
     name: "{{ xenVMName }}"
-    cdrom:
-      iso_name: guest-tools.iso
+ #   cdrom:
+ #     iso_name: guest-tools.iso
     custom_params:
     - key: HVM_boot_params
       value: { "order": "cdn" }
