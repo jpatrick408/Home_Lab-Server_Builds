@@ -16,7 +16,6 @@
       - git
       - python3-pymysql
       - sqlite3
-      #- supervisor
 
 - name: Creating Gitea User
   ansible.builtin.user:

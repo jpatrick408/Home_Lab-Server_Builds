@@ -1,0 +1,8 @@
+xenVMName: Next Cloud
+xenVMTemplate: Debian Bookworm 12
+xenVMSize: 756
+xenVMCPU: 4
+xenVMRAM: 16384
+xenVMISO: debian-12.9.0-amd64-DVD-1.iso
+xenVMNetwork: VLAN 25 (Default) SFP+
+xenVMMAC: e2:39:ff:da:8e:c9

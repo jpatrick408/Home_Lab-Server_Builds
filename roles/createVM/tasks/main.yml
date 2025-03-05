@@ -44,4 +44,3 @@
       value: { "order": "cdn" }
     wait_for_ip_address: true
   delegate_to: localhost
-
