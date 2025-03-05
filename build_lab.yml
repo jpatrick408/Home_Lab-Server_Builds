@@ -102,24 +102,25 @@
       ansible.builtin.import_role:
         name: dns
 
-#- hosts: jsunifi2
-#  tags: unifi
-#  become: true
-#  gather_facts: no
-#  tasks:
+- hosts: jscloud
+  tags: nextcloud
+  become: true
+  gather_facts: no
+  tasks:
 
-#  - name: Importing Unifi's VM Varialbes
-#    ansible.builtin.include_vars: xcp_unifi.yml
+  - name: Importing Next Cloud's VM Variables
+    ansible.builtin.include_vars: xcp_nextCloud.yml
 
-#  - ansible.builtin.import_role:
-#      name: createVM
+  - name: Create Pi-Hole Virtual Machine
+    ansible.builtin.import_role:
+      name: createVM
 
-#- hosts: jsunifi2
-#  tags: unifi
-#  become: true
-#  gather_facts: yes
-#  tasks:
+- hosts: jscloud
+  tags: nextcloud
+  become: true
+  gather_facts: yes
+  tasks:
 
-#  - name: Setting Up Unifi Controller
-#    ansible.builtin.import_role:
-#      name: unifi
+    - name: Setting Up NextCloud Server
+      ansible.builtin.import_role:
+        name: nextCloud
